@@ -1,14 +1,22 @@
 {
   "id": "auto-tagger",
   "name": "Auto Tagger",
-  "version": "2.0.0",
+  "version": "2.0.1",
   "author": "Viboplr",
   "description": "Analyzes file paths and metadata to discover patterns and classify them as tags, artists, or albums",
   "minAppVersion": "0.9.25",
+  "updateUrl": "https://github.com/outcast1000/viboplr-auto-tagger/releases/latest/download/update.json",
   "contributes": {
     "sidebarItems": [
-      { "id": "auto-tagger-view", "label": "Auto Tagger", "icon": "tag" }
+      {
+        "id": "auto-tagger-view",
+        "label": "Auto Tagger",
+        "icon": "tag"
+      }
     ],
-    "eventHooks": ["track:added", "scan:complete"]
+    "eventHooks": [
+      "track:added",
+      "scan:complete"
+    ]
   }
 }
