@@ -44,6 +44,13 @@ function makeMockApi(overrides) {
       },
     },
   };
+  // Hosts >= 1.0.77 draw a header over the view; `legacyHost` models an older
+  // one without api.ui.setViewHeader.
+  const viewHeaders = [];
+  api.viewHeaders = viewHeaders;
+  if (!overrides.legacyHost) {
+    api.ui.setViewHeader = function (viewId, header) { viewHeaders.push({ viewId, header }); };
+  }
   return api;
 }
 

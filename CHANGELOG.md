@@ -1,5 +1,14 @@
 # Changelog
 
+## v2.1.0
+- Fills in the header Viboplr 1.0.77+ draws over the view. The subtitle
+  counts your rules and any candidates still to review. A status word shows
+  what the plugin is doing ("Analyzing…", "Applying rules…") or, when idle,
+  whether new tracks get tagged automatically ("Auto-assign on" / "off",
+  "No rules yet"). Older app versions are unaffected.
+- "Run Now" now reports failures instead of failing silently, and ignores a
+  second click while a run is already in progress.
+
 ## v2.0.1
 - Declares `updateUrl` in its manifest, so "Check for updates" can see this
   plugin at all. The app skips any installed plugin whose manifest omits the

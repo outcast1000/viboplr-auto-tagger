@@ -26,6 +26,7 @@ function activate(api) {
     autoAssignMetadata: true,
     approvedItems: [],
     processedTrackIds: {},
+    applying: false,
   };
 
   function loadSettings() {
@@ -456,6 +457,25 @@ function activate(api) {
     } else if (state.activeTab === "settings") {
       renderSettings();
     }
+    pushViewHeader();
+  }
+
+  // Sends the host-drawn header only when it changed: render() runs on every
+  // keystroke in the filter box, and each setViewHeader re-renders the host.
+  var lastViewHeader = null;
+  function pushViewHeader() {
+    if (!api.ui || typeof api.ui.setViewHeader !== "function") return; // older hosts
+    var header = viewHeaderFor({
+      analyzing: state.analyzing,
+      applying: state.applying,
+      ruleCount: state.approvedItems.length,
+      candidateCount: state.candidates.length,
+      autoAssign: state.autoAssign,
+    });
+    var key = JSON.stringify(header);
+    if (key === lastViewHeader) return;
+    lastViewHeader = key;
+    api.ui.setViewHeader("auto-tagger-view", header);
   }
 
   function buildTabs() {
@@ -762,9 +782,11 @@ function activate(api) {
 
 
   api.ui.onAction("run-approved", function () {
-    if (state.approvedItems.length === 0) return;
+    if (state.approvedItems.length === 0 || state.applying) return;
     var collectionRoots = getCollectionRoots();
     api.ui.showNotification("Running " + state.approvedItems.length + " rules...");
+    state.applying = true;
+    pushViewHeader();
 
     fetchAllTracks().then(function (tracks) {
       var promises = [];
@@ -834,10 +856,15 @@ function activate(api) {
         return Promise.all(promises);
       }
     }).then(function () {
+      state.applying = false;
+      pushViewHeader();
       api.ui.requestAction("refresh-library", {});
       api.ui.showNotification("Done — rules applied to library.");
     }).catch(function (err) {
       console.error("Auto-tagger: run-approved failed:", err);
+      state.applying = false;
+      pushViewHeader();
+      api.ui.showNotification("Applying rules failed: " + (err && err.message ? err.message : err));
     });
   });
 
@@ -918,6 +945,36 @@ function activate(api) {
   });
 }
 
+function formatCount(n) {
+  return String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+}
+
+function plural(n, word) {
+  return formatCount(n) + " " + word + (n === 1 ? "" : "s");
+}
+
+// Pure: the host-drawn header over the view (api.ui.setViewHeader). The
+// subtitle says what the plugin holds; the status word says what it is doing
+// right now, or whether new tracks get tagged automatically.
+function viewHeaderFor(s) {
+  var rules = s.ruleCount || 0;
+  var candidates = s.candidateCount || 0;
+  var subtitle;
+  if (rules === 0 && candidates === 0) {
+    subtitle = "Find recurring patterns in file paths and metadata, then turn them into rules";
+  } else {
+    subtitle = plural(rules, "rule");
+    if (candidates > 0) subtitle += " · " + plural(candidates, "candidate") + " to review";
+  }
+  var status;
+  if (s.analyzing) status = { variant: "muted", label: "Analyzing…" };
+  else if (s.applying) status = { variant: "muted", label: "Applying rules…" };
+  else if (rules === 0) status = { variant: "muted", label: "No rules yet" };
+  else if (s.autoAssign) status = { variant: "success", label: "Auto-assign on" };
+  else status = { variant: "muted", label: "Auto-assign off" };
+  return { subtitle: subtitle, status: status, actions: [] };
+}
+
 function deactivate() {}
 
-return { activate: activate, deactivate: deactivate };
+return { activate: activate, deactivate: deactivate, _viewHeaderFor: viewHeaderFor };
