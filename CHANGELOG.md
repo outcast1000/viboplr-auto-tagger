@@ -1,5 +1,10 @@
 # Changelog
 
+## v2.2.0
+- **Runs in the plugin worker runtime.** It now gets only what it asks for
+  — `library:read`, `library:write` — and can't reach anything else in the app. Viboplr asks
+  you to allow these once when you update. Requires Viboplr 1.0.85.
+
 ## v2.1.0
 - Fills in the header Viboplr 1.0.77+ draws over the view. The subtitle
   counts your rules and any candidates still to review. A status word shows
