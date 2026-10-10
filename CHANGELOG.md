@@ -1,5 +1,8 @@
 # Changelog
 
+## v2.2.1
+- Releases are now signed with the Viboplr plugin-signing key, so Viboplr allows the permissions this plugin asks for without prompting. No functional changes.
+
 ## v2.2.0
 - **Runs in the plugin worker runtime.** It now gets only what it asks for
   — `library:read`, `library:write` — and can't reach anything else in the app. Viboplr asks
